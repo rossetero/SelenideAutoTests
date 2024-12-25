@@ -8,7 +8,7 @@ public class SelenideTests extends SelenideTestsConfig {
 
     @Test
     public void verifyItemTitleAndParamsTest() {
-        assertTrue(VerifyItemTitleAndParamsTest.test());
+        assertEquals(CartBuilder.getItemsInfoFromCards(), VerifyItemTitleAndParamsTest.test());
     }
 
     @Test

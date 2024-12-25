@@ -19,7 +19,7 @@ public class CartBuilder {
     private final String incrementItemCounterXPath = "//button[@data-selector=\"quantity-group-plus\"]";
     private final String goToCartButtonXPath = "//a[@data-selector=\"go-to-cart\"]";
     private final String togglerXPath = "//a[@data-selector=\"header-rubrics-toggler-desktop\"]";
-    private Set<String> categories = Set.of("kostyumy", "bele");
+    private Set<String> categories = Set.of("kostyumy", "bele", "bryuki", "tolstovki");
 //"kostyumy","bryuki","tolstovki",
 
     CartBuilder() {
@@ -40,7 +40,7 @@ public class CartBuilder {
             addProductToCart(amount, c);
         }
         $x(goToCartButtonXPath).click();
-        Selenide.sleep(2000);
+        //Selenide.sleep(2000);
 
     }
 
@@ -50,12 +50,17 @@ public class CartBuilder {
         SelenideElement color = $x("//span[contains(text(), \"Цвет:\")]/following-sibling::*[1]");
         if (color.is(visible)) {
             itemInfo.append(color.getOwnText());
+        } else if (itemInfo.toString().contains("Цвет:")) {
+            String colorValue = itemInfo.substring(
+                    itemInfo.toString().indexOf(":") + 2,
+                    itemInfo.toString().indexOf(";"));
+            itemInfo.append(colorValue);
         }
         SelenideElement size = $x("//span[contains(text(), \"Размер:\")]/following-sibling::*[1]");
         if (size.is(visible)) {
             itemInfo.append(" ").append(size.getOwnText());
         }
-        itemsInfoFromCards.add(itemInfo.toString());
+        itemsInfoFromCards.add(itemInfo.toString().replaceAll("[^a-zA-Zа-яА-Я0-9]", ""));
     }
 
     private void addProductToCart(int amount, String category) {
@@ -69,29 +74,27 @@ public class CartBuilder {
             l.click();
         } else {
             //
-            System.out.println("WHAT?!");
+            System.out.println("Toggles didn't work");
             open("/catalog");
             $x(getCategoryXPathFromCatalogPageFor(category)).click();//костюмы станица
         }
         //Selenide.sleep(2000);
         $x(getRandomisedItemCardXPath()).click();
-        Selenide.sleep(2000);
+        // Selenide.sleep(1000);
         collectInfo();
         $x(addToCartButtonXPath).click();
-        //Selenide.sleep(2000);
-        //$x(incrementItemCounterXPath).click();
-        //Selenide.sleep(2000);
         for (int i = 0; i < amount - 1; i++) {
+            $x("//legend/span[contains(text(),\"Размер\")]").scrollTo();
             $x(incrementItemCounterXPath).click();
-            Selenide.sleep(1500);
+            Selenide.sleep(1200);
         }
     }
 
     private String getRandomisedItemCardXPath() {
-        //Random r = new Random();
-        //int n = r.nextInt(3) + 1;
+        Random r = new Random();
+        int n = r.nextInt(3) + 1;
         //TODO
-        int n = 4;
+        //int n = 4;
         return String.format("//div[@class=\"product-listing-card\"][%d]/div[@class=\"product-listing-card__preview\"]/a[@class=\"product-listing-card__preview-link\"]", n);
     }
 
