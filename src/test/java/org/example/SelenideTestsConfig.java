@@ -8,8 +8,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 
+import java.util.ArrayList;
+
 public abstract class SelenideTestsConfig {
-    //private final CartBuilder cartBuilder;
 
     @BeforeAll
     public static void setUp() {
