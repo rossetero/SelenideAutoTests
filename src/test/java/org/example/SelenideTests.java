@@ -8,4 +8,9 @@ public class SelenideTests extends SelenideTestsConfig {
     public void verifyItemTitleAndParamsTest(){
         VerifyItemTitleAndParamsTest.test();
     }
+
+    @Test
+    public void verifyTotalAmountTest(){
+        VerifyTotalAmountTest.test();
+    }
 }
