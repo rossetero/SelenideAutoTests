@@ -2,32 +2,32 @@ package org.example;
 
 import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
+import com.codeborne.selenide.ex.ElementShould;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import static com.codeborne.selenide.Condition.clickable;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.*;
 
-// TODO удалить комментарии и сделать репоизиторий публичным перед отсправкой
 public class CartBuilder {
+    private static final Logger logger = LoggerFactory.getLogger(CartBuilder.class);
     private static List<String> itemsInfoFromCards;
 
     private final String addToCartButtonXPath = "//button[@data-selector=\"add-to-cart-btn\"]";
     private final String incrementItemCounterXPath = "//button[@data-selector=\"quantity-group-plus\"]";
     private final String goToCartButtonXPath = "//a[@data-selector=\"go-to-cart\"]";
     private final String togglerXPath = "//a[@data-selector=\"header-rubrics-toggler-desktop\"]";
-    private Set<String> categories = Set.of("kostyumy", "bele", "bryuki", "tolstovki");
-//"kostyumy","bryuki","tolstovki",
+    private final Set<String> categories = Set.of("kostyumy", "bele", "bryuki", "tolstovki");
 
     CartBuilder() {
         itemsInfoFromCards = new ArrayList<>();
     }
-
-
-    // TODO добавить проверку и логгирование таймаута
 
     public static List<String> getItemsInfoFromCards() {
         return itemsInfoFromCards;
@@ -36,12 +36,10 @@ public class CartBuilder {
     public void fillCart() {
         Random r = new Random();
         for (String c : categories) {
-            int amount = r.nextInt(4) + 1;
+            int amount = r.nextInt(5) + 1;
             addProductToCart(amount, c);
         }
-        $x(goToCartButtonXPath).click();
-        //Selenide.sleep(2000);
-
+        $x(goToCartButtonXPath).shouldBe(clickable).click();
     }
 
     private void collectInfo() {
@@ -65,22 +63,18 @@ public class CartBuilder {
 
     private void addProductToCart(int amount, String category) {
         open("/");
-        //Selenide.sleep(1500);
         $x(togglerXPath).click();
-        Selenide.sleep(1500);
-        // TODO спросить как поступить с каталогом
-        SelenideElement l = $x(getCategoryXPathFromCatalogTogglerFor(category)); //костюмы кнопка
-        if (l.is(visible)) {
-            l.click();
-        } else {
-            //
-            System.out.println("Toggles didn't work");
+        SelenideElement linkFromToggler = $x(getLinkXPathFromCatalogTogglerFor(category));
+        try {
+            linkFromToggler.shouldBe(visible);
+            linkFromToggler.click();
+            logger.info("Menu toggler used");
+        } catch (ElementShould e) {
+            logger.warn("Menu Toggler didn't work. Going to catalog page to continue preparations");
             open("/catalog");
-            $x(getCategoryXPathFromCatalogPageFor(category)).click();//костюмы станица
+            $x(getLinkXPathFromCatalogPageFor(category)).click();
         }
-        //Selenide.sleep(2000);
         $x(getRandomisedItemCardXPath()).click();
-        // Selenide.sleep(1000);
         collectInfo();
         $x(addToCartButtonXPath).click();
         for (int i = 0; i < amount - 1; i++) {
@@ -92,17 +86,16 @@ public class CartBuilder {
 
     private String getRandomisedItemCardXPath() {
         Random r = new Random();
-        int n = r.nextInt(3) + 1;
-        //TODO
-        //int n = 4;
+        int n = r.nextInt(10) + 1;
+        logger.info("Card number {} clicked", n);
         return String.format("//div[@class=\"product-listing-card\"][%d]/div[@class=\"product-listing-card__preview\"]/a[@class=\"product-listing-card__preview-link\"]", n);
     }
 
-    private String getCategoryXPathFromCatalogTogglerFor(String category) {
+    private String getLinkXPathFromCatalogTogglerFor(String category) {
         return String.format("//a[@class=\"mega-burger-content-menu__title\"][contains(@href, \"%s\")]", category);
     }
 
-    private String getCategoryXPathFromCatalogPageFor(String category) {
+    private String getLinkXPathFromCatalogPageFor(String category) {
         return String.format("//a[@class=\"link\"][contains(@href, \"muzh\")]/ancestor::li[@class=\"category\"]//a[@class=\"link\"][contains(@href, \"%s\")]", category);
     }
 
